@@ -1,16 +1,24 @@
-name: Supabase Keep-Alive
+name: Full Keep-Alive (Render + Supabase)
 
 on:
   schedule:
     - cron: "*/5 * * * *"  # Cada 5 minutos
-  workflow_dispatch:        # Ejecución manual
+  workflow_dispatch:        # Permite ejecución manual
 
 jobs:
-  ping:
+  keep_alive:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Ping Supabase REST API
+      - name: Wake Render Backend
         run: |
+          echo "Pinging Render backend..."
+          curl -s "https://funkostore-postgres-2025.onrender.com/health" \
+            || echo "Render backend is sleeping or unreachable"
+
+      - name: Wake Supabase REST API
+        run: |
+          echo "Pinging Supabase REST API..."
           curl -s "https://dmmqaexxgghiuzjgtrtj.supabase.co/rest/v1/funkos?limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-           
+            || echo "Supabase returned an error"
